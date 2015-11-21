@@ -8,20 +8,29 @@
 
 </head>
   <body>
-    <h1>Login</h1>
+    <h1 class="text-center">Login</h1>
     <div class="container">
       <form class="form-horizontal" action="/login" method="post">
+        <div class="form-group row">
+          <div class="col-xs-6 col-xs-offset-3">
+            <label>Username</label>
+            <input class="form-control" type="text" name="username" />
+          </div>
+
+        </div>
+
         <div class="form-group">
-          <label>Username</label>
-          <input class="form-control" type="text" name="username" />
-          <br/>
+          <div class="col-xs-6 col-xs-offset-3">
+            <label>Password</label>
+            <input class="form-control" type="password" name="password" />
+          </div>
+          
         </div>
         <div class="form-group">
-          <label>Password</label>
-          <input class="form-control" type="password" name="password" />
-        </div>
-        <div class="form-group">
-          <input class="btn btn-primary" type="submit" value="Log In"></input>
+          <div class="col-xs-6 col-xs-offset-3">
+            <input class="btn btn-primary" type="submit" value="Log In"></input>
+          </div>
+          
         </div>
     </form>
 

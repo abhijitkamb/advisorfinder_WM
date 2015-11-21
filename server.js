@@ -98,6 +98,11 @@ app.get('/login', function (req, res) {
 	res.sendFile(path.join(__dirname + "/public" + '/login.html'));
 });
 
+app.get('/mainpage', function (req, res) {
+	console.log("rendering main page");
+	res.sendFile(path.join(__dirname + "/public" + '/mainpage.html'));
+});
+
 app.post('/login', passport.authenticate('local', {
 		successRedirect: '/loginSuccess',
 		failureRedirect: '/loginFailure'
