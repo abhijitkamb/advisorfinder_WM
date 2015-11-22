@@ -4,6 +4,9 @@ myApp.controller('AppCtrl', ['$scope', '$http',
 
 	function($scope, $http){
 		console.log("Hello world from controller");
+		var current_question = 1;
+
+		$scope.optionsData = {'value1':'', 'value2':'', 'priority':''};
 
 
 		var refresh = function() {
@@ -12,9 +15,11 @@ myApp.controller('AppCtrl', ['$scope', '$http',
 				$scope.contactlist = response;
 				$scope.contact = "";
 			});
+
+		
 		};
 
-		refresh();		
+		//refresh();		
 
 		$scope.addContact = function () {
 			console.log($scope.contact);
@@ -28,12 +33,15 @@ myApp.controller('AppCtrl', ['$scope', '$http',
 		$scope.displayQuestions = function () {
 			console.log("displaying questions");
 
-			$http.get('/allquestions').success(function (response) {
+			$http.get('/questionlist').success(function (response) {
 				$scope.questionlist = response;
+
+
 				$scope.question = ""
 				$scope.option = ""
 			})
 		};
+
 
 		$scope.remove = function (id){
 			console.log(id);
@@ -60,7 +68,52 @@ myApp.controller('AppCtrl', ['$scope', '$http',
 			$scope.contact = "";
 		};
 
+		$scope.filterQuestions = function (element) {
+			//console.log(element);
+
+			
+			if (element.sectionid == current_question)
+					return true
+			return false
+		}
+
+		$scope.getnextsection = function (secid) {
+
+			if(current_question < 4){
+				current_question++;
+
+				console.log($scope.optionsData);
+				console.log(secid);
+
+				$scope.optionsData.sectionid = secid;
+
+				$http.post('/sendquestionnaire', $scope.optionsData).success(function (response) {
+					console.log("post response");
+
+					console.log(response);
+				});
+
+				$scope.optionsData ={'value1':'', 'value2':'', 'priority': ''};
+			}
+
+			
+
+			else{
+
+				
+				$http.get('/matched').success(function (response) {
+					console.log("received matches");
+				})
+
+				
+			}
+		}
+
+
+
 
 
 	}
 ]);
+
+

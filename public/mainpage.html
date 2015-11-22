@@ -8,48 +8,46 @@
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css" integrity="sha384-aUGj/X2zp5rLCbBxumKTCw2Z50WgIr1vs/PFN4praOTvYXWlVyh2UtNUU0KAUhAX" crossorigin="anonymous">
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
 
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.7/angular.min.js"></script>
+<!--<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.7/angular-route.js"></script>-->
+<script src="controller.js"></script>
+
+
+<link rel="stylesheet" href="./animation.css"></link>
+
 	<title>RBC Wealth Manager Finder</title>
 </head>
 
 <body>
-
+	<div ng-controller="AppCtrl" ng-init="displayQuestions()">
 	<form class="form-horizontal">
-		<div class="row">
+		<div class="row" ng-repeat="question in questionlist | orderBy:'sectionid' | filter: filterQuestions" ng-animate="'animate'">
 			<div class="col-xs-10 col-xs-push-1">
 				<div id="section-1" class="panel panel-primary">
 					<div class="panel-heading">
-						<h2>Section 1</h2>
+						<h2>{{question.sectionname}}</h2>
 					</div>
 				  	<div class="panel-body" >
-				  		<div class="form-group row">
-				  			<div class="col-xs-6">
-				  				<label class="control-label">Question 1 goes here</label>
+				  		<div ng-repeat="q in question.qlist">
+				  			<div class="form-group row">
+				  			<div class="col-xs-10">
+				  				<label class="control-label">{{q.content}}</label>
 				  			</div>
+					  		</div>
+					  		<div class="form-group row" ng-repeat="option in q.options">
+				  				<div class="col-xs-12">
+				  				<label class="control-label">
+				  					<input type="radio" name="radio{{q.id}}" id="radios-0" value="{{q.id}}-{{$index}}" ng-model="$parent.optionsData['value'+q.id]" >
+				  						{{option}}
+				  					</label>
+				  				</div>
+					  		</div>
+
+					  		<tt>{{optionsData | json}}</tt>
+
 				  		</div>
-				  		<div class="form-group row">
-			  				<div class="radio col-xs-12">
-			  				<label class="control-label">
-			  					<input type="radio" name="radios" id="radios-0" value="1">
-			  						Option one
-			  					</label>
-			  				</div>
-				  		</div>
-				  		<div class="form-group row">
-			  				<div class="radio  col-xs-12">
-			  					<label class="control-label">
-			  						<input type="radio" name="radios" id="radios-0" value="1">
-			  						Option two
-			  					</label>
-			  				</div>
-				  		</div>
-				  		<div class="form-group row">
-			  				<div class="radio col-xs-12">
-			  					<label class="control-label">
-			  						<input type="radio" name="radios" id="radios-0" value="1">
-			  						Option three
-			  					</label>
-			  				</div>
-				  		</div>
+				  		
+				  		
 
 				  	</div>
 				  	<div class="panel-footer">
@@ -59,17 +57,19 @@
 					  		</div>
 					  		
 					  		<div class="col-xs-6">
-							    <select id="selectbasic" name="selectbasic" class="form-control">
-							      <option value="1">Very Important</option>
-							      <option value="2">Important</option>
-							      <option value="3">Average</option>
-							      <option value="4">Least Important</option>
+							    <select ng-model="optionsData.priority" id="selectbasic" name="selectbasic" class="form-control">
+							      <option value="Very_Important" >Very Important</option>
+							      <option value="Important">Important</option>
+							      <option value="Average">Average</option>
+							      <option value="Least_Important">Least Important</option>
 							    </select>
 						  	</div>
+						  	<tt>{{optionsData.priority | json}}</tt>
+
 				  		</div>
 				  		<div class="row container">
 				          <div class="pull-right">
-				            <button class="btn btn-primary btn-lg">Continue</button>
+				            <button class="btn btn-primary btn-lg" ng-click= "getnextsection(question.sectionid)">Continue</button>
 				          </div>
 				          
 				        </div>
@@ -77,20 +77,6 @@
 					  	</div>
 					</div>
 				</div>
-			</div>
-
-			<div id="section-2" class="panel panel-primary">
-				<div class="panel-heading"><h3>Section 2</h3></div>
-			  	<div class="panel-body">
-			  	asdf
-			  	</div>
-			</div>
-
-			<div id="section-3" class="panel panel-primary">
-				<div class="panel-heading"><h3>Section 3</h3></div>
-			  	<div class="panel-body">
-			  	asdf
-			  	</div>
 			</div>
 
 			
@@ -102,9 +88,6 @@
 
 
 
-<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.7/angular.min.js"></script>
-<!--<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.7/angular-route.js"></script>-->
-<script src="controller.js"></script>
 
 
 </html>	

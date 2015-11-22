@@ -9,6 +9,7 @@ var bodyParser = require('body-parser');
 var path = require("path");
 var passport = require('passport');
 var LocalStrategy = require('passport-local').Strategy;
+var lupus = require('lupus');
 
 //routes
 //require('./public/passport.js')(passport, bodyParser);
@@ -19,6 +20,7 @@ var LocalStrategy = require('passport-local').Strategy;
 
 var mongoose = require('mongoose');
 mongoose.connect('mongodb://localhost/MyDatabase');
+mongoose.set('debug', true)
 
 var Schema = mongoose.Schema;
 var UserDetail = new Schema({
@@ -28,9 +30,39 @@ var UserDetail = new Schema({
 	collection: 'userInfo'
 });
 
+var questionschema = new Schema({
+	sectionname: String,
+	sectionid: String,
+	content: String,
+	options: [String],
+	qlist:{
+		type:Array,
+		'default': []
+	},
+	alist:{
+		type:Array,
+		'default': []
+	},
+	priority: Number
+}, { collection: 'questionInfo'});
+
+
+var advisorschema = new Schema({
+	name: String,
+	sections: {
+		type: Array,
+		'default': []
+	}
+}, {collection: 'advisorInfo'});
 
 var UserDetails = mongoose.model('userInfo', UserDetail);
 module.export = UserDetails;
+
+var QuestionDetails = mongoose.model('questionInfo', questionschema);
+module.export = QuestionDetails;
+
+var AdvisorDetails = mongoose.model('advisorInfo', advisorschema);
+module.export = AdvisorDetails;
 
 
 
@@ -52,7 +84,7 @@ app.get('/contactlist', function (req, res){
 	console.log("received get request");
 
 	db.contactlist.find(function (err, docs) {
-		console.log(docs);
+		//console.log(docs);
 		res.json(docs);
 	});
 });
@@ -60,9 +92,124 @@ app.get('/contactlist', function (req, res){
 app.get('/questionlist', function (req, res) {
 	console.log("received questionlist get request");
 
-	db.MyDatabase
+	QuestionDetails.find({}, function (err, docs) {
+		//console.log(docs);
+		res.json(docs);
+	});
 });
 
+app.post('/sendquestionnaire', function (req, res) {
+	//console.log("PRIOIOOIAIdlksajjlasdkjadjkkj")
+	//console.log(req.body.priority);
+	//sectionid: "1"
+	//value1: "1-0"
+	//value2: "2-3"
+
+	var valueIndex1 = Number(req.body.value1.split("-")[1]);
+	var valueIndex2 = Number(req.body.value2.split("-")[1]);
+	var optionIndex1 = Number(req.body.value1.split("-")[0])-1;
+	var optionIndex2 = Number(req.body.value2.split("-")[0])-1;
+	var findArrayResult = [];
+
+//, {"qlist.options": 1} "sectionid":req.body.sectionid
+
+	QuestionDetails.find({"sectionid":req.body.sectionid}, {"qlist.options":1} ,function (err, docs){
+
+		console.log("DOCS");
+		console.log(docs)
+		var aa =JSON.stringify(docs[0]);
+
+		bb = JSON.parse(aa);
+
+		var ans1 = bb["qlist"][optionIndex1]["options"][valueIndex1];
+		var ans2 = bb["qlist"][optionIndex2]["options"][valueIndex2];
+		console.log("ANSERS")
+		console.log(ans1);
+		console.log(ans2);
+
+		var score = 0;
+		switch(req.body.priority){
+			case 'Very_Important': 
+				score = 100;
+				break;
+			case 'Important':
+			 	score = 50;
+			 	break;
+			case 'Average': 
+				score = 10;
+				break;
+			case 'Least_Important': 
+				score = 1;
+				break;
+			default:
+				score = 1;
+
+		}
+
+
+		QuestionDetails.update({"sectionid": String(req.body.sectionid)}, {$set:{"priority":score, "alist": [{"id":"1", "ans":String(ans1)},{"id":"2", "ans":String(ans2)}]}} , function (err, docs) {
+			console.log(docs);
+			res.json(docs);
+		});
+
+	});
+
+});	
+
+app.get('/matched', function (req, res) {
+	console.log("processing matching making");
+
+	var final_scores = [];
+
+	var sections = ["1", "2", "3"]
+	var advisors = []
+
+	console.log("getting client names");
+
+	var clientinfolist = [];
+
+	for(var i in sections){
+		QuestionDetails.find({"sectionid":sections[i]}, {"alist":1, "priority":1},  function (err, docs) {
+			//console.log(docs[0]);
+
+			var client = {
+				"section" : sections[i],
+				"priority" : docs[0].priority,
+				"ans1" : docs[0].alist[0].ans,
+				"ans2" : docs[0].alist[1].ans
+			};
+
+			//console.log(client);
+			clientinfolist.push(client);
+
+			for (var j = 0; j==i && j<sections.length; j++){
+				if(i == j)
+				AdvisorDetails.find({"sections.sectionid": sections[i]}, {"sections.$.alist": 1, "name": 1},function (err, docs) {
+					console.log(i);
+					console.log(docs[0])
+				});
+			}
+
+		});
+	}
+
+	/*for(var i in sections){
+		QuestionDetails.find({"sections.sectionid":sections[i], name}, {"sectalist":1, "priority":1},  function (err, docs) {
+			console.log(docs);
+
+
+
+
+		});
+	}*/
+
+
+		
+
+
+
+
+});
 
 
 app.post('/contactlist', function (req, res) {
@@ -159,12 +306,6 @@ passport.use(new LocalStrategy(function (username, password, done) {
 		});
 	//});
 }));
-
-
-
-
-
-
 
 
 //launch
