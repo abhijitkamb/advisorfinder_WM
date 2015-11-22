@@ -19,6 +19,7 @@ var LocalStrategy = require('passport-local').Strategy;
 
 var mongoose = require('mongoose');
 mongoose.connect('mongodb://localhost/MyDatabase');
+
 var Schema = mongoose.Schema;
 var UserDetail = new Schema({
 	username: String,
@@ -27,8 +28,11 @@ var UserDetail = new Schema({
 	collection: 'userInfo'
 });
 
+
 var UserDetails = mongoose.model('userInfo', UserDetail);
 module.export = UserDetails;
+
+
 
 app.use(passport.initialize());
 app.use(passport.session());
@@ -51,6 +55,12 @@ app.get('/contactlist', function (req, res){
 		console.log(docs);
 		res.json(docs);
 	});
+});
+
+app.get('/questionlist', function (req, res) {
+	console.log("received questionlist get request");
+
+	db.MyDatabase
 });
 
 

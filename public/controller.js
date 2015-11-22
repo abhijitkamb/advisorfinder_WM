@@ -25,6 +25,16 @@ myApp.controller('AppCtrl', ['$scope', '$http',
 			});
 		};
 
+		$scope.displayQuestions = function () {
+			console.log("displaying questions");
+
+			$http.get('/allquestions').success(function (response) {
+				$scope.questionlist = response;
+				$scope.question = ""
+				$scope.option = ""
+			})
+		};
+
 		$scope.remove = function (id){
 			console.log(id);
 			$http.delete('/contactlist/' + id).success(function (response) {
@@ -49,15 +59,8 @@ myApp.controller('AppCtrl', ['$scope', '$http',
 		$scope.deselect = function (){
 			$scope.contact = "";
 		};
-/*
-		$scope.gotologin = function (){
-			console.log("Clicked on login btn");
-			$http.get('/login').success(function (response) {
-				console.log("on the login page");
-				response.
-			})
-		};
-*/
+
+
 
 	}
 ]);
