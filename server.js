@@ -10,7 +10,7 @@ var path = require("path");
 var passport = require('passport');
 var LocalStrategy = require('passport-local').Strategy;
 var lupus = require('lupus');
-
+var sleep = require('sleep');
 //routes
 //require('./public/passport.js')(passport, bodyParser);
 //require('./public/routes.js')(app, passport, path, LocalStrategy, bodyParser);
@@ -98,6 +98,22 @@ app.get('/questionlist', function (req, res) {
 	});
 });
 
+
+app.get('/intro', function (req, res) {
+	console.log("received intro get request");
+	res.sendFile(path.join(__dirname + "/public" + '/intro.html'));
+	//res.sendFile(path.join(__dirname + "/public" + '/mainpage.html'));
+
+	
+});
+app.post('/results', function (req, res) {
+	console.log("SERRRRVERER CAN YOU SEE ME?????")
+	console.log(path.join(__dirname, "public", "results.html"));
+	//res.sendFile(path.join(__dirname, "public", "results.html"));
+	//res.sendFile('public/results.html' , { root : __dirname});
+	res = req;
+});
+
 app.post('/sendquestionnaire', function (req, res) {
 	//console.log("PRIOIOOIAIdlksajjlasdkjadjkkj")
 	//console.log(req.body.priority);
@@ -162,36 +178,170 @@ app.get('/matched', function (req, res) {
 	var final_scores = [];
 
 	var sections = ["1", "2", "3"]
-	var advisors = []
+	var advisors = {
+
+	};
+
+	var advisor = {
+		"section": {
+			"1": "",
+			"2": "",
+			"3": ""
+		},
+		"totalscore": ""
+	};
 
 	console.log("getting client names");
 
-	var clientinfolist = [];
+		lupus(0, sections.length, function(i) {
+			QuestionDetails.find({"sectionid":sections[i]}, {"alist":1, "priority":1},  function (err, docs) {
+				//console.log(docs[0]);
 
-	for(var i in sections){
-		QuestionDetails.find({"sectionid":sections[i]}, {"alist":1, "priority":1},  function (err, docs) {
-			//console.log(docs[0]);
+				var client = {
+					"section" : sections[i],
+					"priority" : docs[0].priority,
+					"ans1" : docs[0].alist[0].ans,
+					"ans2" : docs[0].alist[1].ans
+				};
 
-			var client = {
-				"section" : sections[i],
-				"priority" : docs[0].priority,
-				"ans1" : docs[0].alist[0].ans,
-				"ans2" : docs[0].alist[1].ans
-			};
+				//console.log(client);
+				//clientinfolist.push(client);
 
-			//console.log(client);
-			clientinfolist.push(client);
-
-			for (var j = 0; j==i && j<sections.length; j++){
-				if(i == j)
 				AdvisorDetails.find({"sections.sectionid": sections[i]}, {"sections.$.alist": 1, "name": 1},function (err, docs) {
-					console.log(i);
-					console.log(docs[0])
-				});
-			}
+					// console.log('---------------------------------');
+					// console.log(docs);
+					// console.log('---------------------------------');
 
+					for(var j in docs){
+
+						if(advisors[docs[j].name]==null || advisors[docs[j].name] == ""){
+							advisors[docs[j].name] = {};
+						}
+						if(advisors[docs[j].name]["sections"] == null || advisors[docs[j].name]["sections"] == ""){
+							advisors[docs[j].name]["sections"] = {};
+						}
+
+						advisors[docs[j].name]["sections"]["section_"+String(i+1)] = {};
+
+
+						// console.log('---------------------------------');
+						// console.log(docs[j]);
+						// console.log('---------------------------------');
+						advisors[docs[j].name]["sections"]["section_"+String(i+1)]["c_denom"]= Number(client.priority)*2; 
+						advisors[docs[j].name]["sections"]["section_"+String(i+1)]["a_denom"]= Number(docs[j].sections[0].priority)*2; 
+
+						if(client.ans1 == docs[j].sections[0].alist[0].ans){
+							advisors[docs[j].name]["sections"]["section_"+String(i+1)]["c_numer"] = Number(client.priority);
+							advisors[docs[j].name]["sections"]["section_"+String(i+1)]["a_numer"] = Number(docs[j].sections[0].priority);
+						}
+						else{
+							advisors[docs[j].name]["sections"]["section_"+String(i+1)]["c_numer"] = 0;
+							advisors[docs[j].name]["sections"]["section_"+String(i+1)]["a_numer"] = 0;
+						}
+							
+
+						if(client.ans2 == docs[j].sections[0].alist[1].ans){
+
+							advisors[docs[j].name]["sections"]["section_"+String(i+1)]["c_numer"] += Number(client.priority);
+							advisors[docs[j].name]["sections"]["section_"+String(i+1)]["a_numer"] += Number(docs[j].sections[0].priority);
+						}
+						else{
+							advisors[docs[j].name]["sections"]["section_"+String(i+1)]["c_numer"] += 0;
+							advisors[docs[j].name]["sections"]["section_"+String(i+1)]["a_numer"] += 0;
+						}
+
+
+					}
+
+				});
+
+
+			});
+
+			
+					setTimeout(function() {
+	  					if( i == sections.length -1){
+							var addkeys = Object.keys(advisors);
+							for ( var j in addkeys){
+								/*console.log(advisors[addkeys[j]]["sections"]["section_1"]["a_numer"]);
+								console.log(advisors[addkeys[j]]["sections"]["section_1"]["a_denom"]);
+								console.log(advisors[addkeys[j]]["sections"]["section_2"]["a_numer"]);
+								console.log(advisors[addkeys[j]]["sections"]["section_2"]["a_denom"]);
+								console.log(advisors[addkeys[j]]["sections"]["section_3"]["a_numer"]);
+								console.log(advisors[addkeys[j]]["sections"]["section_3"]["a_denom"]);
+								console.log("------------------------------------------------------------------------------");*/
+								advisors[addkeys[j]]["totalscore_c"] = (advisors[addkeys[j]]["sections"]["section_1"]["c_numer"] + advisors[addkeys[j]]["sections"]["section_2"]["c_numer"] +advisors[addkeys[j]]["sections"]["section_3"]["c_numer"])/(advisors[addkeys[j]]["sections"]["section_1"]["c_denom"] + advisors[addkeys[j]]["sections"]["section_2"]["c_denom"] +advisors[addkeys[j]]["sections"]["section_3"]["c_denom"]);
+								advisors[addkeys[j]]["totalscore_a"] = (advisors[addkeys[j]]["sections"]["section_1"]["a_numer"] + advisors[addkeys[j]]["sections"]["section_2"]["a_numer"] +advisors[addkeys[j]]["sections"]["section_3"]["a_numer"])/(advisors[addkeys[j]]["sections"]["section_1"]["a_denom"] + advisors[addkeys[j]]["sections"]["section_2"]["a_denom"] +advisors[addkeys[j]]["sections"]["section_3"]["a_denom"]);
+								advisors[addkeys[j]]["totalscore_final"] = Math.sqrt(advisors[addkeys[j]]["totalscore_c"]*advisors[addkeys[j]]["totalscore_a"] );
+								console.log(advisors[addkeys[j]]);
+								console.log(advisors[addkeys[j]]["totalscore_final"]);
+								//console.log(advisors[addkeys[j]]["totalscore_c"]);
+								//console.log(advisors[addkeys[j]]["totalscore_a"]);
+							}
+
+							var first = Number(advisors[addkeys[0]]["totalscore_final"]);
+							var firstName = addkeys[0];
+						
+							for (var j in addkeys){
+								var thisVal = Number(advisors[addkeys[j]]["totalscore_final"]);
+								if(thisVal > first){
+									first = thisVal;
+									firstName = addkeys[j];
+								}
+								
+							}
+
+							var second = Number(advisors[addkeys[0]]["totalscore_final"]);
+							var secondName = addkeys[0];
+
+							if(secondName == firstName){
+								var second = Number(advisors[addkeys[1]]["totalscore_final"]);
+								var secondName = addkeys[1];
+							}
+
+							for (var j in addkeys){
+								var thisVal = Number(advisors[addkeys[j]]["totalscore_final"]);
+								if(thisVal > second && addkeys[j] != firstName ){
+									second = thisVal;
+									secondName = addkeys[j];
+								}
+								
+							}
+
+							var third = Number(advisors[addkeys[0]]["totalscore_final"]);
+							var thirdName = addkeys[0];
+							if(thirdName == firstName){
+								third = Number(advisors[addkeys[1]]["totalscore_final"]);
+								var thirdName = addkeys[1];
+							}
+							if(thirdName == secondName){
+
+								third = Number(advisors[addkeys[2]]["totalscore_final"]);
+								var thirdName = addkeys[2];
+							}
+
+							for (var j in addkeys){
+								var thisVal = Number(advisors[addkeys[j]]["totalscore_final"]);
+								if(thisVal > third && addkeys[j] != secondName && addkeys[j] != firstName){
+									third = thisVal;
+									thirdName = addkeys[j];
+								}
+								
+							}
+
+							var tops = [{name: firstName, value: first.toFixed(3)}, {name:secondName, value:second.toFixed(3)}, {name:thirdName, value:third.toFixed(3)}]
+							console.log(tops);
+							res.json(tops);
+
+							return;
+	  					}
+					}, 1000);
+					
+
+				
+		}, function() {
+	  		console.log('All done!');
 		});
-	}
 
 	/*for(var i in sections){
 		QuestionDetails.find({"sections.sectionid":sections[i], name}, {"sectalist":1, "priority":1},  function (err, docs) {
@@ -275,7 +425,10 @@ app.get('/loginFailure', function (req, res, next){
 
 app.get('/loginSuccess', function (req, res, next){
 	console.log("auth pass");
-	res.send('Sucessfully authenticated');
+	//res.send('Sucessfully authenticated');
+	//res.sendFile(path.join(__dirname + "/public" + '/mainpage.html'));
+	res.sendFile(path.join(__dirname + "/public" + '/intro.html'));
+
 });
 
 

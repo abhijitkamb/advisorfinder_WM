@@ -9,6 +9,8 @@ myApp.controller('AppCtrl', ['$scope', '$http',
 		$scope.optionsData = {'value1':'', 'value2':'', 'priority':''};
 
 
+
+
 		var refresh = function() {
 			$http.get('/contactlist').success(function(response){
 				console.log("client recevied data");
@@ -26,7 +28,7 @@ myApp.controller('AppCtrl', ['$scope', '$http',
 			$http.post('/contactlist', $scope.contact).success(function (response) {
 				console.log("post response");
 				console.log(response);
-				refresh();
+				//refresh();
 			});
 		};
 
@@ -79,7 +81,7 @@ myApp.controller('AppCtrl', ['$scope', '$http',
 
 		$scope.getnextsection = function (secid) {
 
-			if(current_question < 4){
+			if(current_question < 3){
 				current_question++;
 
 				console.log($scope.optionsData);
@@ -94,20 +96,49 @@ myApp.controller('AppCtrl', ['$scope', '$http',
 				});
 
 				$scope.optionsData ={'value1':'', 'value2':'', 'priority': ''};
+
+				console.log(current_question);
 			}
 
 			
 
 			else{
-
+				console.log("going to else");
 				
 				$http.get('/matched').success(function (response) {
 					console.log("received matches");
-				})
+					console.log(response);
+
+					/*matchess[0] = response.firstName;
+					matchess[1] = response.secondName;
+					matchess[2] = response.thirdName;*/
+					$scope.matchess = response;
+
+					console.log($scope.matchess);
+
+					bb();
+
+
+
+
+
+
+				});
 
 				
 			}
-		}
+		};
+
+
+		var bb = $http.get('/results').success(function (res){
+						console.log("fetching results....");
+						document.location = '/public/results.html';
+						$scope.matchess = res;
+
+
+						$scope.resultsshown = true;
+
+					});
 
 
 
